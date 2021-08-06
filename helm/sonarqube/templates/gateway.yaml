@@ -1,0 +1,57 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: sonarqube
+  namespace: istio-system
+spec:
+  secretName: sonarqube-cert
+  issuerRef:
+    name: letsencrypt-prod-issuer
+    kind: ClusterIssuer
+  commonName: {commonName)
+  dnsNames:
+  - sonarqube.{company}.org
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: sonarqube-gateway
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+  - port:
+      number: 443
+      name: https-sonarqube
+      protocol: HTTPS
+    hosts:
+    - "sonarqube.{company}.org"
+    tls:
+      mode: SIMPLE
+      credentialName: sonarqube-cert
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: sonarqube-vs
+spec:
+  hosts:
+  - sonarqube.{company}.org
+  gateways:
+  - sonarqube-gateway
+  http:
+  - route:
+    - destination:
+        port:
+          number: 9000
+        host: {{ template "sonarqube.fullname" . }}
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: sonarqube-dr
+spec:
+  host: {{ template "sonarqube.fullname" . }}
+  trafficPolicy:
+    tls:
+      mode: DISABLE

@@ -1,0 +1,33 @@
+image:
+  tag: 9.0.1-enterprise
+
+service:
+  type: ClusterIP
+
+persistence:
+  enabled: true
+  storageClass: managed-premium
+  accessMode: ReadWriteOnce
+  size: 128Gi
+
+database:
+  type: postgresql
+
+plugins:
+  deleteDefaultPlugins: true
+
+resources:
+  limits:
+    cpu: 2000m
+    memory: 8192Mi
+  requests:
+    cpu: 100m
+    memory: 6144Mi
+
+postgresql:
+  enabled: false
+  postgresServer: "{name}.postgres.database.azure.com"
+  postgresDatabase: sonarqube
+  options: ssl-mode=require&gssEncMode=disable
+  service:
+    port: 5432
